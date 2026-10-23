@@ -4,6 +4,7 @@ use wordcraft_doc::Document;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod safe_save;
+mod sandbox_save; // fork: saving inside the macOS App Sandbox
 
 /// Formats WordCraft opens.
 pub const OPEN_EXTS: &[&str] = &[

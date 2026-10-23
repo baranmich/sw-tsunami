@@ -82,6 +82,11 @@ fn create_directly(path: &Path, refused: io::Error, prepare: impl FnOnce(&mut Fi
     // `create_new` never opens an existing file or follows a link, so it can't touch one.
     let mut file = match OpenOptions::new().write(true).create_new(true).open(path) {
         Ok(file) => file,
+        // Fork: inside the macOS App Sandbox the folder always refuses the temporary file; write in
+        // place behind a copy in the app's container instead (`sandbox_save`).
+        Err(e) if e.kind() == io::ErrorKind::AlreadyExists && super::sandbox_save::sandboxed() => {
+            return super::sandbox_save::in_place(path, &super::sandbox_save::default_backups(), prepare);
+        }
         Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {
             return Err(guided(
                 refused,

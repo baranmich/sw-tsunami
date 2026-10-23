@@ -9,6 +9,12 @@ on:
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      build:
+        description: "What to build on macOS"
+        type: choice
+        options: [dmg, appstore]
+        default: dmg
 
 env:
   CARGO_TERM_COLOR: always
@@ -42,7 +48,7 @@ jobs:
 
   macos:
     name: macOS DMG
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: (github.event_name == 'workflow_dispatch' && inputs.build == 'dmg') || startsWith(github.ref, 'refs/tags/v')
     needs: check
     runs-on: macos-14
     timeout-minutes: 90
@@ -80,4 +86,70 @@ jobs:
         with:
           name: macos-dmg
           path: dist/release/*
+          if-no-files-found: error
+
+  appstore:
+    name: Mac App Store package
+    if: github.event_name == 'workflow_dispatch' && inputs.build == 'appstore'
+    needs: check
+    runs-on: macos-14
+    timeout-minutes: 90
+    # Secrets (Settings › Secrets and variables › Actions), see FORK.md › App Store:
+    #   MAS_CERTIFICATES (base64 .p12 with both the Apple Distribution and the Mac Installer
+    #   Distribution certificate), MAS_CERTIFICATES_PASSWORD, MAS_PROFILE (base64
+    #   .provisionprofile), APPLE_TEAM_ID, MAS_APP_IDENTITY, MAS_INSTALLER_IDENTITY;
+    #   for upload also ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY (the .p8 file's text).
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the build number is the commit count
+      - name: Check out craft-fonts
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: ${{ env.CRAFT_FONTS_REF }}
+          path: craft-fonts
+      - run: |
+          rustup toolchain install stable --profile minimal --target aarch64-apple-darwin,x86_64-apple-darwin
+          rustup default stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Signing identities and profile
+        env:
+          MAS_CERTIFICATES: ${{ secrets.MAS_CERTIFICATES }}
+          MAS_CERTIFICATES_PASSWORD: ${{ secrets.MAS_CERTIFICATES_PASSWORD }}
+          MAS_PROFILE_B64: ${{ secrets.MAS_PROFILE }}
+          ASC_KEY: ${{ secrets.ASC_KEY }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          set -euo pipefail
+          umask 077
+          KC="$RUNNER_TEMP/mas.keychain-db"; P12="$RUNNER_TEMP/mas.p12"; PASS="$(openssl rand -hex 24)"
+          printf '%s' "$MAS_CERTIFICATES" | base64 --decode >"$P12"
+          security create-keychain -p "$PASS" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$PASS" "$KC"
+          security import "$P12" -P "$MAS_CERTIFICATES_PASSWORD" -T /usr/bin/codesign -T /usr/bin/productbuild -T /usr/bin/security -f pkcs12 -k "$KC"
+          rm -f "$P12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$PASS" "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          printf '%s' "$MAS_PROFILE_B64" | base64 --decode >"$RUNNER_TEMP/app.provisionprofile"
+          echo "MACOS_KEYCHAIN=$KC" >>"$GITHUB_ENV"
+          echo "MAS_PROFILE=$RUNNER_TEMP/app.provisionprofile" >>"$GITHUB_ENV"
+          if [ -n "$ASC_KEY" ]; then
+            mkdir -p ~/.appstoreconnect/private_keys
+            printf '%s' "$ASC_KEY" >~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8
+          fi
+      - name: Build, sign, package (and upload when the API key is set)
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MAS_APP_IDENTITY: ${{ secrets.MAS_APP_IDENTITY }}
+          MAS_INSTALLER_IDENTITY: ${{ secrets.MAS_INSTALLER_IDENTITY }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: brand/appstore/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appstore-pkg
+          path: dist/release/*.pkg
           if-no-files-found: error

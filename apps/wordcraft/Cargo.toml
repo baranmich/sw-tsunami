@@ -35,6 +35,12 @@ winresource = "0.1"
 # MIT OR Apache-2.0, from the Tauri project; the AppKit calls it needs are unsafe, which this
 # workspace forbids in its own code. No default features: only the macOS backend is built.
 muda = { version = "0.21", default-features = false }
+# Fork: File › Recent in the App Sandbox (Mac App Store builds) via security-scoped bookmarks
+# (apps/wordcraft/src/sandbox_access.rs). Audited 2026-10-23: 337 lines, three unsafe blocks
+# (resolve, start/stop accessing, balanced by an RAII guard), only objc2/objc2-foundation, which
+# are already in the build. Pinned exactly: review the diff before bumping.
+apple-scoped-bookmarks = "=0.1.0"
+base64 = { workspace = true }
 # Finder double-click, Open With, Dock drops and `open -a WordCraft letter.docx` arrive as a
 # kAEOpenDocuments Apple event, which winit 0.30 doesn't handle (#27). This audited crate (also used
 # by PdfCraft and PhotoCraft) registers the handler (Objective-C interop needs unsafe, which our

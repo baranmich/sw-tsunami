@@ -61,6 +61,58 @@ Zatím zůstává z upstreamu: stránky Soubor › Možnosti / Tisk / Export / I
 pravítko a stavová lišta. Výchozí písmo nových dokumentů je dál `Aptos` (konstanta v
 `crates/doc/src/styles.rs`, změna by zasáhla layout i testy upstreamu).
 
+## Mac App Store
+
+Stejná binárka se dá vydat dvěma cestami:
+
+| | DMG (mimo App Store) | Mac App Store |
+|---|---|---|
+| Skript | `packaging/macos/package.sh` | `brand/appstore/package.sh` |
+| Podpis | Developer ID + notarizace | Apple Distribution + provisioning profil, `.pkg` podepsaný Mac Installer Distribution |
+| Sandbox | ne | ano (`brand/appstore/entitlements.plist`) |
+| CI | Actions › fork › Run workflow › `dmg` | Actions › fork › Run workflow › `appstore` |
+
+Co fork kvůli sandboxu doplnil:
+- **Ukládání** (`crates/engine/src/io/sandbox_save.rs`): sandbox nedovolí dočasný soubor vedle
+  dokumentu, takže se zapisuje na místo. Původní obsah se předtím zkopíruje do kontejneru appky
+  a při chybě se vrátí zpět.
+- **Nedávné dokumenty** (`apps/wordcraft/src/sandbox_access.rs`): security-scoped bookmarky přes
+  auditovaný crate `apple-scoped-bookmarks`, takže po restartu jde dokument z Nedávných otevřít
+  i uložit.
+- Nastavení, šablony, fonty a slovníky se v sandboxu automaticky ukládají do kontejneru
+  (`~/Library/Containers/<bundle_id>/`).
+- Bez sítě: most do Zotera a řídicí port pro agenty (MCP) v App Store verzi nefungují.
+
+### Jednorázová příprava (tvoje kroky)
+
+1. developer.apple.com › Identifiers: zaregistruj App ID `cz.praguepixels.writer` (macOS).
+2. Certificates: vytvoř **Apple Distribution** a **Mac Installer Distribution**, nainstaluj je do
+   Klíčenky a exportuj obojí do jednoho `.p12`.
+3. Profiles: **Mac App Store** profil pro to App ID a certifikát Apple Distribution.
+4. App Store Connect › Aplikace › +: nová macOS appka s bundle ID `cz.praguepixels.writer`.
+   Název appky v App Store musí být unikátní, takže tady už potřebuješ finální jméno.
+5. Users and Access › Integrations: API klíč s rolí App Manager (pro automatický upload).
+6. GitHub › Settings › Secrets: `MAS_CERTIFICATES` (base64 `.p12`), `MAS_CERTIFICATES_PASSWORD`,
+   `MAS_PROFILE` (base64 profilu), `APPLE_TEAM_ID`, `MAS_APP_IDENTITY`
+   (např. `Apple Distribution: Prague Pixels s.r.o. (TEAMID)`), `MAS_INSTALLER_IDENTITY`
+   (`3rd Party Mac Developer Installer: Prague Pixels s.r.o. (TEAMID)`) a pro upload
+   `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY` (obsah `.p8`). Base64 vytvoříš příkazem
+   `base64 -i soubor | pbcopy`.
+7. Actions › fork › Run workflow › `appstore`. Bez API klíče stáhneš `.pkg` z artefaktů a
+   nahraješ ho přes Transporter.
+
+### Při odeslání do review
+
+- **Šifrování (export compliance):** appka otevírá heslem chráněné `.docx` (AES). V App Store
+  Connect na to odpovídáš v dotazníku. Klíč `ITSAppUsesNonExemptEncryption` fork záměrně
+  nenastavuje, rozhodnutí je na tobě.
+- **Popis a klíčová slova:** nepoužívej „Word“, „Microsoft“ ani „Office“ (pravidlo 4.1). „Opens
+  .docx files“ je v pořádku.
+- **Poznámka pro review:** appka funguje offline, bez účtu a bez přihlášení.
+
+Ještě neověřeno na skutečném Macu v sandboxu: Číst nahlas (spouští systémový `say`) a tlačítko
+„nastavit jako výchozí appku“.
+
 ## Převzetí novinek z upstreamu
 
 ```sh

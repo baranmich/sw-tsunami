@@ -19,12 +19,16 @@ mod file_dialogs;
 #[cfg(any(target_os = "windows", target_os = "macos", test))]
 mod graphics;
 mod logging;
+// Fork: the mac shell's system menu bar.
 #[cfg(target_os = "macos")]
 mod mac_menu;
 mod print;
 mod region;
+// Fork: File › Recent in the App Sandbox.
 #[cfg(target_os = "macos")]
-mod traffic_lights; // fork: the mac shell's system menu bar
+mod sandbox_access;
+#[cfg(target_os = "macos")]
+mod traffic_lights;
 
 use wordcraft_engine::Session;
 use wordcraft_ui_egui::{
@@ -51,6 +55,8 @@ impl eframe::App for App {
         if wordcraft_ui_egui::mac_shell::on() {
             mac_menu::poll(&mut self.0, ctx);
         }
+        #[cfg(target_os = "macos")]
+        sandbox_access::poll(&self.0, ctx);
         self.0.logic(ctx);
         self.3.show(frame);
         // A window that doesn't fit on its screen (the default size on a laptop) shrinks to fit
@@ -463,6 +469,8 @@ fn main() -> eframe::Result {
             if wordcraft_ui_egui::mac_shell::on() {
                 mac_menu::install(&app, &cc.egui_ctx);
             }
+            #[cfg(target_os = "macos")]
+            sandbox_access::install();
             let mut key_file = None;
             if let Some(port) = control_port
                 && let Some((rx, file)) = control_server::start(port, cc.egui_ctx.clone(), wordcraft_control_key::settings_dir().as_deref())
