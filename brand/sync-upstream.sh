@@ -29,8 +29,8 @@ else
   # Upstream's workflows were deleted in the fork; when upstream changes one, keep it deleted.
   git diff --name-only --diff-filter=U | while read -r f; do
     case "$f" in
-      .github/workflows/fork.yml) ;;
-      .github/workflows/*) git rm -q -- "$f" && echo "    kept deleted: $f" ;;
+      .github/workflows/fork.yml | .github/workflows/screenshots.yml) ;;
+      .github/workflows/* | .github/dependabot.yml) git rm -q -- "$f" && echo "    kept deleted: $f" ;;
     esac
   done
   if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
@@ -45,10 +45,14 @@ fi
 
 # Upstream's new workflows arrive as new files: remove them too.
 for f in .github/workflows/*; do
-  [ "$f" = .github/workflows/fork.yml ] && continue
+  case "$f" in .github/workflows/fork.yml | .github/workflows/screenshots.yml) continue ;; esac
   [ -e "$f" ] || continue
   git rm -q -- "$f" && echo "    removed new upstream workflow: $f"
 done
+# Dependency updates come with upstream merges, not from Dependabot pull requests in the fork.
+if [ -e .github/dependabot.yml ]; then
+  git rm -q -- .github/dependabot.yml && echo "    removed upstream's .github/dependabot.yml"
+fi
 if [ -n "$(git diff --cached --name-only)" ]; then
   git commit -q -m "Fork: drop upstream workflows"
 fi
