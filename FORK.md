@@ -89,7 +89,9 @@ Co fork kvůli sandboxu doplnil:
   i uložit.
 - Nastavení, šablony, fonty a slovníky se v sandboxu automaticky ukládají do kontejneru
   (`~/Library/Containers/<bundle_id>/`).
-- Bez sítě: most do Zotera a řídicí port pro agenty (MCP) v App Store verzi nefungují.
+- **Zotero** funguje: entitlement `network.client` povoluje odchozí spojení, appka ho používá
+  jen k Zoteru na stejném Macu (`127.0.0.1:23116`). Řídicí port pro agenty (MCP, `--control`)
+  potřebuje `network.server`, ten App Store verze nemá, takže zůstává jen v DMG.
 
 ### Jednorázová příprava (tvoje kroky)
 
@@ -116,10 +118,13 @@ Co fork kvůli sandboxu doplnil:
   nenastavuje, rozhodnutí je na tobě.
 - **Popis a klíčová slova:** nepoužívej „Word“, „Microsoft“ ani „Office“ (pravidlo 4.1). „Opens
   .docx files“ je v pořádku.
-- **Poznámka pro review:** appka funguje offline, bez účtu a bez přihlášení.
+- **Poznámka pro review:** appka funguje offline, bez účtu a bez přihlášení. K síti: „The
+  network.client entitlement is used only for the optional Zotero integration, which connects
+  to the Zotero desktop app on the same Mac (localhost). No data leaves the device.“
+- **Privacy (App Privacy v App Store Connect):** Data Not Collected — appka nic neodesílá.
 
-Ještě neověřeno na skutečném Macu v sandboxu: Číst nahlas (spouští systémový `say`) a tlačítko
-„nastavit jako výchozí appku“.
+Ještě neověřeno na skutečném Macu v sandboxu: Číst nahlas (spouští systémový `say`), tlačítko
+„nastavit jako výchozí appku“ a Zotero s nainstalovaným Zoterem.
 
 ## Převzetí novinek z upstreamu
 
