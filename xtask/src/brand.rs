@@ -12,7 +12,7 @@
 use std::fs;
 use std::path::Path;
 
-const NEEDLES: &[&str] = &["WordCraft", "ArtCraft", "artcraft", "getartcraft", "storytold"];
+const NEEDLES: &[&str] = &["WordCraft", "ArtCraft", "artcraft", "getartcraft", "storytold", "Discord"];
 
 pub fn run(root: &Path) -> Result<(), String> {
     let allow = load_allow(root)?;

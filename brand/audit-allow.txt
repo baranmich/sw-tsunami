@@ -15,3 +15,7 @@ apps/wordcraft/build.rs: .set("ProductName", "WordCraft")
 apps/wordcraft/build.rs: .set("FileDescription", "WordCraft word processor")
 apps/wordcraft/build.rs: .set("LegalCopyright", "Copyright (c) the WordCraft authors.
 apps/wordcraft/src/default_apps.rs: registeredAppMachine=WordCraft
+# Community links, shown only when brand.toml sets community_url (guarded at each place).
+crates/ui-egui/src/backstage.rs: ("Discord community", "discord")
+crates/ui-egui/src/keytips.rs: c("Community Discord", "ui.discord")
+crates/ui-egui/src/ribbon.rs: "Community\nDiscord"
