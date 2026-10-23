@@ -39,11 +39,19 @@ oprávnění ke složkám a „Otevřít v“. Proto neobsahují zobrazovaný n�
 - `cargo xtask brand` hlídá, že žádný nový upstreamový řetězec neukazuje starý název. Výjimky
   jsou záměrně v `brand/audit-allow.txt` (poděkování upstreamu v About, kód jen pro Windows).
 
-## Mac skořápka (místo ribbonu)
+## Ribbon, nebo Mac skořápka
 
-`brand.toml` › `[ui] shell = "mac"` přepne okno z upstreamového ribbonu na rozhraní ve stylu
-macOS. `"ribbon"` vrátí upstreamový vzhled. Obě varianty spouštějí stejné příkazy, takže funkce,
-undo, vyhledávání příkazů, makra, MCP i řídicí kanál fungují beze změny.
+Výchozí je **ribbon** (`brand.toml` › `[ui] shell = "ribbon"`): upstreamové UI ve stylu Wordu,
+stejně jako WPS Office, který s ribbonem v Mac App Store je. Systémový menu bar má appka v obou
+variantách. `shell = "mac"` přepne na rozhraní ve stylu macOS popsané níže. Obě varianty
+spouštějí stejné příkazy, takže funkce, undo, vyhledávání příkazů, makra, MCP i řídicí kanál
+fungují beze změny.
+
+**Neutrální názvy** (`[ui] neutral_terms = true`, tabulka `brand/terms.tsv`): ochranné známky
+Microsoftu v popiscích se nahrazují. WordArt → Text Art, SmartArt → Smart Graphic, Researcher →
+Research, Immersive Reader → Reading Focus, „Office 2003“ → Classic. Ribbon sám o sobě problém
+není, ochranné známky ano: na stížnost vlastníka Apple appku stáhne. `false` vrátí původní
+názvy.
 
 | Část | Soubor | Co dělá |
 |---|---|---|

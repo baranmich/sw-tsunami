@@ -204,8 +204,12 @@ pub fn build() -> MenuBar {
         ),
         b.item("Watermark", "design.watermark", json!({})),
     ];
-    let view = vec![
-        b.check("Inspector", INSPECTOR, json!({}), |_, ctx| super::state(ctx).inspector),
+    // The inspector exists only in the mac shell; the ribbon shell's menu bar has the rest.
+    let mut view = Vec::new();
+    if super::on() {
+        view.push(b.check("Inspector", INSPECTOR, json!({}), |_, ctx| super::state(ctx).inspector));
+    }
+    view.extend([
         b.check("Navigation Pane", "view.navigationPane", json!({}), |a, _| a.session.view.nav_pane),
         b.check("Ruler", "view.ruler", json!({}), |a, _| a.session.view.ruler),
         b.check("Show Comments", "view.commentsPane", json!({}), |a, _| a.session.view.comments_pane),
@@ -222,7 +226,7 @@ pub fn build() -> MenuBar {
         Separator,
         b.check("Dark Mode", "view.darkMode", json!({}), |a, _| a.session.view.dark_mode),
         b.item("Enter Full Screen", "view.fullScreen", json!({})),
-    ];
+    ]);
     let tools = vec![
         b.check("Track Changes", "review.trackChanges", json!({}), |a, _| a.session.doc.settings.track_changes),
         b.item("Accept All Changes", "review.acceptAll", json!({})),

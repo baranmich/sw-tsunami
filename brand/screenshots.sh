@@ -56,6 +56,9 @@ sleep 6
 osascript -e "tell application \"$NAME\" to activate" >/dev/null 2>&1 || true
 shot 01-window 2
 
+run ui.tab '{"tab": "Insert"}'
+shot 02-insert-tab
+run ui.tab '{"tab": "Home"}'
 menu "Format" && shot 02-menu-format && close_menu
 menu "View" && shot 03-menu-view && close_menu
 menu "$NAME" && shot 04-menu-app && close_menu
@@ -74,6 +77,8 @@ run ui.language '{"value": "en"}'
 
 run ui.backstage '{"value": true, "page": "home"}'
 shot 09-start 2
+run ui.backstage '{"value": true, "page": "options"}'
+shot 10-settings 2
 
 osascript -e "tell application \"$NAME\" to quit" >/dev/null 2>&1 || pkill -x "$NAME" || true
 ls -la "$OUT"

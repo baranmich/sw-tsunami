@@ -12,10 +12,22 @@ struct File {
     ui: Ui,
 }
 
-#[derive(serde::Deserialize, Default)]
+#[derive(serde::Deserialize)]
 struct Ui {
     #[serde(default)]
     shell: String,
+    #[serde(default = "yes")]
+    neutral_terms: bool,
+}
+
+impl Default for Ui {
+    fn default() -> Self {
+        Self { shell: String::new(), neutral_terms: true }
+    }
+}
+
+fn yes() -> bool {
+    true
 }
 
 #[derive(serde::Deserialize)]
@@ -63,7 +75,7 @@ fn main() {
     let f: File = toml::from_str(&text).unwrap_or_else(|e| fail(&e.to_string()));
     let b = f.brand;
     let id = f.identity;
-    let shell = if f.ui.shell.trim().is_empty() { "mac".to_string() } else { f.ui.shell.trim().to_string() };
+    let shell = if f.ui.shell.trim().is_empty() { "ribbon".to_string() } else { f.ui.shell.trim().to_string() };
     if !matches!(shell.as_str(), "mac" | "ribbon") {
         fail("[ui] shell must be \"mac\" (toolbar, inspector, menu bar) or \"ribbon\" (upstream's Word-style ribbon)");
     }
@@ -107,6 +119,10 @@ fn main() {
     for (k, doc, v) in consts {
         out.push_str(&format!("/// {doc}\npub const {k}: &str = {v:?};\n"));
     }
+    out.push_str(&format!(
+        "\n/// Whether third-party trademarks in interface text get the neutral names of brand/terms.tsv.\npub const NEUTRAL_TERMS: bool = {};\n",
+        f.ui.neutral_terms
+    ));
     out.push_str(&format!(
         "\n/// The display name as a string literal, for `concat!(brand_name!(), \" …\")`.\n#[macro_export]\nmacro_rules! brand_name {{\n    () => {{\n        {name:?}\n    }};\n}}\n"
     ));

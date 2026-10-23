@@ -1,0 +1,16 @@
+# Neutral names for third-party trademarks in interface text (brand.toml [ui] neutral_terms).
+# Upstream names features after Microsoft's (WordArt and SmartArt are Microsoft trademarks;
+# Researcher and Immersive Reader are its feature names). The ribbon itself is fine — WPS Office
+# ships one in the Mac App Store — but a trademark in the UI invites a complaint, and Apple removes
+# apps over those. LibreOffice avoids them the same way ("Fontwork").
+#
+# Columns, TAB-separated: language code (* = every language), match (= whole text, ~ = anywhere in
+# the text), upstream text, replacement. Language rows are tried before * rows; whole-text rows
+# before anywhere rows. Applied after translation (crates/brand/src/lib.rs, `neutral`).
+*	~	WordArt	Text Art
+*	~	SmartArt	Smart Graphic
+*	~	Office 2003	Classic
+en	~	Immersive Reader	Reading Focus
+en	=	Researcher	Research
+en	~	Researcher needs	Research needs
+cs	=	Výchozí Office 2003	Klasické

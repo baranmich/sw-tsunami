@@ -376,6 +376,15 @@ pub fn has(lang: Lang, s: &str) -> bool {
         || wordcraft_brand::translate(lang.code(), s).is_some()
 }
 
+/// Fork: third-party trademarks in interface text get neutral names (`brand/terms.tsv`) when
+/// brand.toml asks for it. Off in this crate's tests, which query upstream's labels.
+fn fork_terms(lang: Lang, s: &str) -> &str {
+    if cfg!(test) || cfg!(feature = "ribbon-in-tests") || !wordcraft_brand::NEUTRAL_TERMS {
+        return s;
+    }
+    wordcraft_brand::neutral(lang.code(), s)
+}
+
 /// `s` in the current language ([`tr`] with [`current`]).
 pub fn t(s: &str) -> &str {
     tr(current(), s)
@@ -398,7 +407,7 @@ pub fn trc<'a>(lang: Lang, context: &str, s: &'a str) -> &'a str {
         .in_context(context, s)
         .or_else(|| wordcraft_brand::upstream_form(s).and_then(|u| cat.in_context(context, &u)))
         .or_else(|| wordcraft_brand::translate(lang.code(), s));
-    wordcraft_brand::rebrand(hit.unwrap_or(s))
+    fork_terms(lang, wordcraft_brand::rebrand(hit.unwrap_or(s)))
 }
 
 /// Lowercase translated interface labels and UI search queries in the current language.
@@ -430,7 +439,7 @@ pub fn tr(lang: Lang, s: &str) -> &str {
     let cat = lang.catalog();
     let hit =
         cat.plain(s).or_else(|| wordcraft_brand::upstream_form(s).and_then(|u| cat.plain(&u))).or_else(|| wordcraft_brand::translate(lang.code(), s));
-    wordcraft_brand::rebrand(hit.unwrap_or(s))
+    fork_terms(lang, wordcraft_brand::rebrand(hit.unwrap_or(s)))
 }
 
 /// A style's name as the interface shows it: built-in styles (`Normal`, `Heading 2`, `TOC 3`) in

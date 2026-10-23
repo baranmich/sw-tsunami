@@ -19,7 +19,7 @@ mod file_dialogs;
 #[cfg(any(target_os = "windows", target_os = "macos", test))]
 mod graphics;
 mod logging;
-// Fork: the mac shell's system menu bar.
+// Fork: the system menu bar (both shells).
 #[cfg(target_os = "macos")]
 mod mac_menu;
 mod print;
@@ -51,10 +51,9 @@ impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         #[cfg(target_os = "macos")]
         apple_events::poll(&self.4, &mut self.0, ctx);
+        // Fork: the system menu bar, in either shell (mac shell or ribbon).
         #[cfg(target_os = "macos")]
-        if wordcraft_ui_egui::mac_shell::on() {
-            mac_menu::poll(&mut self.0, ctx);
-        }
+        mac_menu::poll(&mut self.0, ctx);
         #[cfg(target_os = "macos")]
         sandbox_access::poll(&self.0, ctx);
         self.0.logic(ctx);
@@ -466,9 +465,7 @@ fn main() -> eframe::Result {
                 app.mac_titlebar = bar;
             }
             #[cfg(target_os = "macos")]
-            if wordcraft_ui_egui::mac_shell::on() {
-                mac_menu::install(&app, &cc.egui_ctx);
-            }
+            mac_menu::install(&app, &cc.egui_ctx);
             #[cfg(target_os = "macos")]
             sandbox_access::install();
             let mut key_file = None;

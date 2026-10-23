@@ -75,6 +75,68 @@ pub fn translate(code: &str, s: &str) -> Option<&'static str> {
     map.get(&(code.to_string(), s.to_string())).copied()
 }
 
+/// Neutral names for third-party trademarks (`brand/terms.tsv`).
+const TERMS: &str = include_str!("../../../brand/terms.tsv");
+
+struct Term {
+    lang: &'static str,
+    whole: bool,
+    from: &'static str,
+    to: &'static str,
+}
+
+fn terms() -> &'static [Term] {
+    static T: OnceLock<Vec<Term>> = OnceLock::new();
+    T.get_or_init(|| {
+        TERMS
+            .lines()
+            .filter(|l| !l.starts_with('#') && !l.trim().is_empty())
+            .filter_map(|l| {
+                let mut c = l.splitn(4, '\t');
+                let (lang, kind, from, to) = (c.next()?, c.next()?, c.next()?, c.next()?);
+                (!from.is_empty()).then_some(Term { lang, whole: kind == "=", from, to })
+            })
+            .collect()
+    })
+}
+
+/// `s` (interface text in language `code`) with third-party trademarks replaced by the neutral
+/// names of `brand/terms.tsv`: whole-text rows first, then anywhere-in-text rows; the language's
+/// own rows before the `*` rows. Each distinct result is made once and kept, like [`rebrand`].
+pub fn neutral<'a>(code: &str, s: &'a str) -> &'a str {
+    let t = terms();
+    if !t.iter().any(|r| s.contains(r.from)) {
+        return s;
+    }
+    static CACHE: OnceLock<Mutex<HashMap<(String, String), &'static str>>> = OnceLock::new();
+    let mut map = CACHE.get_or_init(|| Mutex::new(HashMap::new())).lock().unwrap_or_else(|e| e.into_inner());
+    if let Some(hit) = map.get(&(code.to_string(), s.to_string())) {
+        return hit;
+    }
+    let order = [code, "*"];
+    let whole = order.iter().find_map(|lang| t.iter().find(|r| r.whole && r.lang == *lang && r.from == s).map(|r| r.to));
+    let out: String = match whole {
+        Some(to) => to.to_string(),
+        None => {
+            let mut out = s.to_string();
+            for lang in order {
+                for r in t.iter().filter(|r| !r.whole && r.lang == lang) {
+                    if out.contains(r.from) {
+                        out = out.replace(r.from, r.to);
+                    }
+                }
+            }
+            out
+        }
+    };
+    if out == s || map.len() >= INTERN_CAP {
+        return s;
+    }
+    let leaked: &'static str = Box::leak(out.into_boxed_str());
+    map.insert((code.to_string(), s.to_string()), leaked);
+    leaked
+}
+
 /// `Some(url)` when the link is configured.
 pub fn link(url: &'static str) -> Option<&'static str> {
     if url.is_empty() { None } else { Some(url) }
@@ -104,6 +166,18 @@ mod tests {
         assert_eq!(upstream_form("plain text"), None);
         assert_eq!(translate("cs", "Inspector"), Some("Inspektor"));
         assert_eq!(translate("cs", "No such text"), None);
+    }
+
+    #[test]
+    fn neutral_names_replace_trademarks_in_every_language() {
+        assert_eq!(neutral("en", "WordArt Styles"), "Text Art Styles");
+        assert_eq!(neutral("cs", "Styly WordArt"), "Styly Text Art");
+        assert_eq!(neutral("de", "SmartArt einfügen"), "Smart Graphic einfügen");
+        assert_eq!(neutral("en", "Researcher"), "Research");
+        assert_eq!(neutral("cs", "Výzkumník"), "Výzkumník", "translations that are already generic stay");
+        assert_eq!(neutral("cs", "Výchozí Office 2003"), "Klasické");
+        assert_eq!(neutral("en", "Office 2003 Default"), "Classic Default");
+        assert_eq!(neutral("en", "Bold"), "Bold");
     }
 
     #[test]

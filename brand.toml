@@ -35,6 +35,10 @@ data_dir = "cz.praguepixels.writer"
 slug = "pp-writer"
 
 [ui]
-# Window shell: "mac" = macOS-style toolbar, inspector and menu bar (this fork's design);
-# "ribbon" = upstream's Word-style ribbon. Both drive the same commands.
-shell = "mac"
+# Window shell: "ribbon" = upstream's ribbon (as WPS Office ships in the Mac App Store);
+# "mac" = macOS-style toolbar and inspector. Both drive the same commands; the system menu bar
+# is there in both.
+shell = "ribbon"
+# Replace third-party trademarks in interface text (WordArt, SmartArt…) with neutral names from
+# brand/terms.tsv. Recommended for the App Store; false shows upstream's names.
+neutral_terms = true

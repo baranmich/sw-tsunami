@@ -1,5 +1,5 @@
-//! Fork: the mac shell's system menu bar on macOS, built with `muda` from the platform-free model
-//! in `wordcraft_ui_egui::mac_shell::menu`. Items carry no key equivalents, so the app's own
+//! Fork: the system menu bar on macOS (ribbon or mac shell), built with `muda` from the
+//! platform-free model in `wordcraft_ui_egui::mac_shell::menu`. Items carry no key equivalents, so the app's own
 //! keyboard handling keeps every shortcut as it is; the system items (Services, Hide, Quit,
 //! Minimize, Zoom…) are AppKit's own.
 //!
