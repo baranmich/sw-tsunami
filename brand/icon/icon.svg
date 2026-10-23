@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Placeholder app icon for the fork (original artwork, CC0). Replace with the final icon; no
+       name or lettering, so it survives the rename. Full-bleed 512 tile; packaging adds the macOS
+       grid margin. -->
+  <rect width="512" height="512" rx="112" fill="#1d2440"/>
+  <g transform="rotate(-6 256 268)">
+    <rect x="132" y="96" width="248" height="320" rx="22" fill="#f6f3ec"/>
+    <rect x="172" y="168" width="150" height="16" rx="8" fill="#1d2440"/>
+    <rect x="172" y="212" width="168" height="10" rx="5" fill="#8a90a6"/>
+    <rect x="172" y="240" width="168" height="10" rx="5" fill="#8a90a6"/>
+    <rect x="172" y="268" width="136" height="10" rx="5" fill="#8a90a6"/>
+    <rect x="172" y="312" width="168" height="10" rx="5" fill="#8a90a6"/>
+    <rect x="172" y="340" width="104" height="10" rx="5" fill="#8a90a6"/>
+    <path d="M318 96 h40 v84 l-20 -16 l-20 16 z" fill="#ef6b4a"/>
+  </g>
+</svg>

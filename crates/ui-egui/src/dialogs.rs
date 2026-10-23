@@ -2687,22 +2687,28 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 1 => crate::credits::contributors_ui(ui),
                 2 => crate::credits::models_ui(ui),
                 _ => {
-                    ui.label(egui::RichText::new(tl!("WordCraft")).font(semibold(22.0)));
+                    // Fork: name, owner and links from brand.toml; upstream credited as the licences ask.
+                    ui.label(egui::RichText::new(wordcraft_brand::NAME).font(semibold(22.0)));
                     let build = option_env!("WORDCRAFT_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
                     ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
-                    ui.label(tl!(
-                        "A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team."
-                    ));
+                    ui.label(tl!("A word processor for macOS."));
                     ui.add_space(6.0);
-                    ui.hyperlink_to(tl!("getartcraft.com/apps/wordcraft"), "https://getartcraft.com/apps/wordcraft");
-                    ui.hyperlink_to(tl!("Join us on Discord: discord.gg/artcraft"), "https://discord.gg/artcraft");
-                    ui.hyperlink_to(tl!("Source code: github.com/storytold/wordcraft"), "https://github.com/storytold/wordcraft");
+                    for url in [wordcraft_brand::WEBSITE, wordcraft_brand::COMMUNITY_URL, wordcraft_brand::SOURCE_URL] {
+                        if let Some(url) = wordcraft_brand::link(url) {
+                            ui.hyperlink_to(url.trim_start_matches("https://"), url);
+                        }
+                    }
                     ui.add_space(6.0);
+                    ui.label(egui::RichText::new(wordcraft_brand::COPYRIGHT).small().weak());
+                    // Not through tl!: the translation hook would rename the upstream project too.
                     ui.label(
-                        egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors."))
-                            .small()
-                            .weak(),
+                        egui::RichText::new(
+                            "Based on WordCraft, an open-source word processor by the ArtCraft team and contributors (MIT OR Apache-2.0).",
+                        )
+                        .small()
+                        .weak(),
                     );
+                    ui.hyperlink_to(egui::RichText::new("github.com/storytold/wordcraft").small(), "https://github.com/storytold/wordcraft");
                 }
             }
             let (ok, cancel) = buttons(ui, tl!("Close"));

@@ -370,7 +370,9 @@ pub fn current() -> Lang {
 
 /// Does `lang` have a catalog entry for this string? (English never does: it is the source.)
 pub fn has(lang: Lang, s: &str) -> bool {
-    lang.catalog().plain(s).is_some()
+    let cat = lang.catalog();
+    // Fork: text already rebranded upstream of the UI is found under its upstream wording.
+    cat.plain(s).or_else(|| wordcraft_brand::upstream_form(s).and_then(|u| cat.plain(&u))).is_some()
 }
 
 /// `s` in the current language ([`tr`] with [`current`]).
@@ -390,7 +392,9 @@ pub fn trc<'a>(lang: Lang, context: &str, s: &'a str) -> &'a str {
     if pseudo::on() {
         return pseudo::mark(s);
     }
-    lang.catalog().in_context(context, s).unwrap_or(s)
+    let cat = lang.catalog();
+    let hit = cat.in_context(context, s).or_else(|| wordcraft_brand::upstream_form(s).and_then(|u| cat.in_context(context, &u)));
+    wordcraft_brand::rebrand(hit.unwrap_or(s))
 }
 
 /// Lowercase translated interface labels and UI search queries in the current language.
@@ -418,7 +422,10 @@ pub fn tr(lang: Lang, s: &str) -> &str {
     if pseudo::on() {
         return pseudo::mark(s);
     }
-    lang.catalog().plain(s).unwrap_or(s)
+    // Fork: interface text names the product from brand.toml, in every language.
+    let cat = lang.catalog();
+    let hit = cat.plain(s).or_else(|| wordcraft_brand::upstream_form(s).and_then(|u| cat.plain(&u)));
+    wordcraft_brand::rebrand(hit.unwrap_or(s))
 }
 
 /// A style's name as the interface shows it: built-in styles (`Normal`, `Heading 2`, `TOC 3`) in

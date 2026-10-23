@@ -361,10 +361,12 @@ impl Bridge {
                 Self::end_edit(s);
                 Ok(Value::Null)
             }
-            "Document_importDocument" | "Document_exportDocument" => {
-                Err("WordCraft doesn't support Zotero's document transfer; the citations are already stored the way Word keeps them".into())
-            }
-            m => Err(format!("WordCraft doesn't support {m}")),
+            "Document_importDocument" | "Document_exportDocument" => Err(concat!(
+                wordcraft_brand::brand_name!(),
+                " doesn't support Zotero's document transfer; the citations are already stored the way Word keeps them"
+            )
+            .into()),
+            m => Err(format!("{} doesn't support {m}", wordcraft_brand::NAME)),
         }
     }
 

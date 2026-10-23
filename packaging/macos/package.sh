@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Build, sign and (optionally) notarize the macOS release artifacts:
 #
-#   $DIST/wordcraft-<version>-macos-<arch>.dmg          WordCraft.app on a drag-to-Applications DMG
-#   $DIST/wordcraft-cli-<version>-macos-<arch>.zip      the headless CLI
+#   $DIST/<slug>-<version>-macos-<arch>.dmg          "<Name>.app" on a drag-to-Applications DMG
+#   $DIST/<slug>-cli-<version>-macos-<arch>.zip      the headless CLI
+# Name, slug and bundle id come from brand.toml (fork; see brand/brand.sh).
 #
 # Usage: packaging/macos/package.sh [--arch universal|aarch64|x86_64] [--skip-build]
 #
@@ -15,6 +16,8 @@
 set -euo pipefail
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
+# shellcheck source=../../brand/brand.sh
+. "$ROOT/brand/brand.sh"
 HERE="$ROOT/packaging/macos"
 
 ARCH=universal
@@ -39,9 +42,9 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 IDENTITY="${MACOS_SIGN_IDENTITY:--}"
 SHORT_VERSION="${VERSION%%-*}"
 WORK="$CARGO_TARGET_DIR/macos-package"
-APP="$WORK/WordCraft.app"
-DMG="$DIST/wordcraft-$VERSION-macos-$ARCH.dmg"
-CLI_ZIP="$DIST/wordcraft-cli-$VERSION-macos-$ARCH.zip"
+APP="$WORK/$BRAND_NAME.app"
+DMG="$DIST/$BRAND_SLUG-$VERSION-macos-$ARCH.dmg"
+CLI_ZIP="$DIST/$BRAND_SLUG-cli-$VERSION-macos-$ARCH.zip"
 
 NOTARIZE=0
 if [ "$IDENTITY" = "-" ]; then
@@ -52,7 +55,7 @@ else
   warn "macOS: APPLE_ID / APPLE_PASSWORD / APPLE_TEAM_ID incomplete; signed but not notarized"
 fi
 
-echo "==> WordCraft $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $NOTARIZE"
+echo "==> $BRAND_NAME $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $NOTARIZE"
 
 # ---- build -------------------------------------------------------------------------------------
 if [ "$SKIP_BUILD" = 0 ]; then
@@ -97,16 +100,20 @@ notarize() {
   fi
 }
 
-# ---- WordCraft.app ----------------------------------------------------------------------------
+# ---- <Name>.app -------------------------------------------------------------------------------
 echo "==> assembling $APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable and icon carry the display name (CFBundleExecutable / CFBundleIconFile).
-cp "$WORK/bin/wordcraft" "$APP/Contents/MacOS/WordCraft"
-cp "$ROOT/assets/app-icon/wordcraft.icns" "$APP/Contents/Resources/WordCraft.icns"
+cp "$WORK/bin/wordcraft" "$APP/Contents/MacOS/$BRAND_NAME"
+cp "$ROOT/brand/icon/icon.icns" "$APP/Contents/Resources/$BRAND_NAME.icns"
 # Licences of the embedded craft-fonts fonts (only when built with CRAFT_FONTS_DIR).
 copy_font_licences "$APP/Contents/Resources"
+# Brand values go into XML and a sed replacement: escape &, < and > for XML, then \, / and & for sed.
+plist_value() { printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/[\/&]/\\&/g'; }
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
   -e "s/@BUILD_SHA@/${WORDCRAFT_BUILD_SHA:-unknown}/g" \
+  -e "s/@NAME@/$(plist_value "$BRAND_NAME")/g" -e "s/@BUNDLE_ID@/$(plist_value "$BRAND_BUNDLE_ID")/g" \
+  -e "s/@COPYRIGHT@/$(plist_value "$BRAND_COPYRIGHT")/g" \
   "$HERE/Info.plist.in" >"$APP/Contents/Info.plist"
 plutil -lint "$APP/Contents/Info.plist"
 printf 'APPL????' >"$APP/Contents/PkgInfo"
@@ -117,13 +124,13 @@ printf 'APPL????' >"$APP/Contents/PkgInfo"
 xattr -cr "$APP"
 # Sign inside-out: nested code first, then the bundle itself (no --deep on the final signature).
 # Today the only nested code is the main executable; frameworks/helpers would be signed here too.
-sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/WordCraft"
+sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/$BRAND_NAME"
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP"
 codesign --verify --strict --deep --verbose=2 "$APP"
 
 if [ "$NOTARIZE" = 1 ]; then
-  ditto -c -k --keepParent "$APP" "$WORK/WordCraft-notarize.zip"
-  notarize "$WORK/WordCraft-notarize.zip"
+  ditto -c -k --keepParent "$APP" "$WORK/app-notarize.zip"
+  notarize "$WORK/app-notarize.zip"
   xcrun stapler staple "$APP"
   xcrun stapler validate "$APP"
   spctl --assess --type execute -vvv "$APP"
@@ -133,12 +140,15 @@ fi
 echo "==> building $DMG"
 STAGE="$WORK/dmg"
 mkdir -p "$STAGE"
-ditto "$APP" "$STAGE/WordCraft.app"
+ditto "$APP" "$STAGE/$BRAND_NAME.app"
 ln -s /Applications "$STAGE/Applications"
 # Finder window layout: background, icon size and positions (packaging/macos/dmg/README.md).
-mkdir -p "$STAGE/.background"
-cp "$HERE/dmg/background.tiff" "$STAGE/.background/background.tiff"
-cp "$HERE/dmg/dmg-layout.DS_Store" "$STAGE/.DS_Store"
+# Fork: generated for the brand name (the layout names the app and the volume); without resvg or
+# the Python packages the DMG works the same, just without the arranged window.
+if ! python3 "$ROOT/brand/dmg.py" "$STAGE" "$BRAND_NAME"; then
+  warn "DMG window layout skipped (brand/dmg.py needs resvg and: pip install 'pillow>=12' ds_store==1.3.3 mac_alias==2.2.3)"
+  rm -rf "$STAGE/.background" "$STAGE/.DS_Store"
+fi
 rm -f "$DMG"
 # Retries an hdiutil verb that attaches a device: on CI runners it fails now and then with
 # "Resource busy". Usage: hdiutil_retry <verb> <args...>; five tries with growing pauses.
@@ -161,7 +171,7 @@ hdiutil_retry() {
 # (Finder location -1,-1), so the signed app failed `codesign --verify --deep --strict` inside the
 # mounted DMG and after copying it out (#525). The volume name has no version: .DS_Store finds the
 # background through an alias that includes it.
-hdiutil_retry create -srcfolder "$STAGE" -volname "WordCraft" -fs HFS+ -format UDZO \
+hdiutil_retry create -srcfolder "$STAGE" -volname "$BRAND_NAME" -fs HFS+ -format UDZO \
   -imagekey zlib-level=9 -ov "$DMG"
 sign "$DMG"
 codesign --verify --strict --verbose=2 "$DMG"
@@ -173,21 +183,21 @@ verify_dmg_app() {
   local dmg="$1" mount="$WORK/dmg-check" copy="$WORK/dmg-check-copy" rc=0
   mkdir -p "$mount" "$copy"
   hdiutil_retry attach -readonly -nobrowse -noautoopen -mountpoint "$mount" "$dmg" >/dev/null
-  echo "==> strict signature check of WordCraft.app inside $(basename "$dmg")"
-  codesign --verify --deep --strict --verbose=2 "$mount/WordCraft.app" || rc=1
+  echo "==> strict signature check of $BRAND_NAME.app inside $(basename "$dmg")"
+  codesign --verify --deep --strict --verbose=2 "$mount/$BRAND_NAME.app" || rc=1
   if [ "$rc" = 0 ]; then
-    ditto "$mount/WordCraft.app" "$copy/WordCraft.app" || rc=1
+    ditto "$mount/$BRAND_NAME.app" "$copy/$BRAND_NAME.app" || rc=1
   fi
   if [ "$rc" = 0 ]; then
     echo "==> strict signature check of a ditto copy of it"
-    codesign --verify --deep --strict --verbose=2 "$copy/WordCraft.app" || rc=1
+    codesign --verify --deep --strict --verbose=2 "$copy/$BRAND_NAME.app" || rc=1
   fi
   if [ "$rc" = 0 ] && [ "$NOTARIZE" = 1 ]; then
-    spctl --assess --type execute -vvv "$copy/WordCraft.app" || rc=1
+    spctl --assess --type execute -vvv "$copy/$BRAND_NAME.app" || rc=1
   fi
   if [ "$rc" != 0 ]; then
-    echo "error: WordCraft.app in $(basename "$dmg") fails strict verification; extended attributes:" >&2
-    xattr -lr "$mount/WordCraft.app" >&2 || true
+    echo "error: $BRAND_NAME.app in $(basename "$dmg") fails strict verification; extended attributes:" >&2
+    xattr -lr "$mount/$BRAND_NAME.app" >&2 || true
   fi
   hdiutil_retry detach "$mount" >/dev/null || hdiutil detach "$mount" -force >/dev/null || rc=1
   rm -rf "$copy"
@@ -203,12 +213,12 @@ fi
 
 # ---- CLI ---------------------------------------------------------------------------------------
 echo "==> building $CLI_ZIP"
-CLI_DIR="$WORK/wordcraft-cli-$VERSION-macos-$ARCH"
+CLI_DIR="$WORK/$BRAND_SLUG-cli-$VERSION-macos-$ARCH"
 mkdir -p "$CLI_DIR"
-cp "$WORK/bin/wordcraft-cli" "$CLI_DIR/"
+cp "$WORK/bin/wordcraft-cli" "$CLI_DIR/$BRAND_SLUG-cli"
 copy_docs "$CLI_DIR"
-sign --options runtime "$CLI_DIR/wordcraft-cli"
-codesign --verify --strict --verbose=2 "$CLI_DIR/wordcraft-cli"
+sign --options runtime "$CLI_DIR/$BRAND_SLUG-cli"
+codesign --verify --strict --verbose=2 "$CLI_DIR/$BRAND_SLUG-cli"
 rm -f "$CLI_ZIP"
 ditto -c -k --norsrc --noextattr --keepParent "$CLI_DIR" "$CLI_ZIP"
 # A bare Mach-O can't carry a stapled ticket; Gatekeeper looks the notarization up online.

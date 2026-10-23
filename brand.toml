@@ -1,0 +1,35 @@
+# Product identity: the single place to rename the app.
+#
+# Everything the user sees (window title, menu bar, About, Dock, Finder, DMG, file metadata,
+# messages in every interface language) is derived from this file at build time. Change a value,
+# rebuild, done. `cargo xtask brand` checks that no upstream "WordCraft" string slipped through.
+#
+# Placeholders until the final name is chosen: family "PP", product "Writer".
+
+[brand]
+# Brand word shared by the whole app family (Affinity model: one brand + a descriptor per app).
+family = "PP"
+# Descriptor of this app inside the family.
+product = "Writer"
+# Full display name. Leave empty to use "{family} {product}".
+name = ""
+
+# Legal owner shown in About and in the app's copyright string.
+vendor = "Prague Pixels s.r.o."
+copyright = "© 2026 Prague Pixels s.r.o."
+
+# Links. Empty = hidden in the app (no website / community button / source link).
+website = ""
+community_url = ""
+source_url = ""
+
+[identity]
+# Stable identifiers. NEVER change these after the first public release: macOS ties
+# preferences, permissions (Files and Folders), Keychain items and "Open with" choices to them.
+# They deliberately do not contain the display name, so renaming the app keeps users' settings.
+bundle_id = "cz.praguepixels.writer"
+# Folder for settings, templates, fonts and dictionaries
+# (~/Library/Application Support/<data_dir> on macOS).
+data_dir = "cz.praguepixels.writer"
+# Lowercase id for machine-facing names (MCP server name, IndexedDB, log targets shown to agents).
+slug = "pp-writer"

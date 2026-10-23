@@ -1,3 +1,7 @@
+This distribution is a modified version of WordCraft, rebranded and packaged for macOS by
+Prague Pixels s.r.o. (2026). The modifications are listed in FORK.md; the app's name and icon
+come from brand.toml and brand/. The original notice follows unchanged.
+
 WordCraft
 Copyright (c) 2026 ArtCraft Team and the WordCraft contributors.
 Licensed under the MIT License or the Apache License, Version 2.0, at your option

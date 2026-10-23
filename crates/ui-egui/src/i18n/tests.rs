@@ -802,7 +802,7 @@ fn turkish_covers_the_entire_existing_interface_catalog_and_preserves_templates(
         ("Euler's identity", "Euler Özdeşliği"),
         ("Default Paragraph Font", "Varsayılan Paragraf Yazı Tipi"),
         ("CONFIDENTIAL", "GİZLİ"),
-        ("WordCraft", "WordCraft"),
+        ("WordCraft", wordcraft_brand::NAME),
         ("unknown future label", "unknown future label"),
     ] {
         assert_eq!(super::tr(tr, source), expected);
@@ -881,7 +881,7 @@ fn hungarian_covers_the_entire_existing_interface_catalog() {
         ("Save", "Mentés"),
         ("Redo", "Újra"),
         ("UPPERCASE", "NAGYBETŰS"),
-        ("WordCraft", "WordCraft"),
+        ("WordCraft", wordcraft_brand::NAME),
         ("unknown future label", "unknown future label"),
     ] {
         assert_eq!(super::tr(hu, source), expected);
@@ -1289,7 +1289,7 @@ fn bulgarian_covers_the_entire_existing_interface_catalog() {
         ("Heading 1", "Заглавие 1"),
         ("Hyphenation", "Сричкопренасяне"),
         ("Track Changes", "Проследяване на промените"),
-        ("WordCraft", "WordCraft"),
+        ("WordCraft", wordcraft_brand::NAME),
         ("unknown future label", "unknown future label"),
     ] {
         assert_eq!(tr(bg, source), expected, "{source}");
@@ -1371,7 +1371,7 @@ fn croatian_covers_the_entire_existing_interface_catalog_and_keeps_count_labels_
         ("Heading 1", "Naslov 1"),
         ("Spelling & Grammar", "Pravopis i gramatika"),
         ("Hyphenation", "Rastavljanje riječi"),
-        ("WordCraft", "WordCraft"),
+        ("WordCraft", wordcraft_brand::NAME),
         ("unknown future label", "unknown future label"),
     ] {
         assert_eq!(tr(hr, source), expected, "{source}");
@@ -1452,7 +1452,7 @@ fn swedish_covers_the_entire_existing_interface_catalog() {
         ("Heading 1", "Rubrik 1"),
         ("Hyphenation", "Avstavning"),
         ("Track Changes", "Spåra ändringar"),
-        ("WordCraft", "WordCraft"),
+        ("WordCraft", wordcraft_brand::NAME),
         ("unknown future label", "unknown future label"),
     ] {
         assert_eq!(tr(sv, source), expected, "{source}");

@@ -178,6 +178,15 @@ impl Exempt {
             || plain.starts_with("Style") || plain.starts_with("Table Style ") // a new style's default name
             || plain.contains('┬') || plain.contains('\u{2061}') // equation input (UnicodeMath), drawn as math
             || matches!(plain, "WordCraft" | "WordCraft User" | "Discord" | "https://" | "auto" | "I. II. III." | "i. ii. iii." | "I, II, III, …" | "i, ii, iii, …")
+            // Fork: proper names from brand.toml and the About credit to upstream, shown as they are.
+            || plain == wordcraft_brand::NAME
+            || plain == wordcraft_brand::COPYRIGHT
+            || plain == wordcraft_brand::rebrand("WordCraft User")
+            || plain.starts_with("Based on WordCraft,")
+            || plain == "github.com/storytold/wordcraft"
+            || [wordcraft_brand::WEBSITE, wordcraft_brand::COMMUNITY_URL, wordcraft_brand::SOURCE_URL]
+                .iter()
+                .any(|u| !u.is_empty() && u.trim_start_matches("https://") == plain)
             || plain == "CONFIDENTIAL" // the watermark dialog's text: document content, kept as typed
             || plain == "Figure 1" // the caption dialog's sample: the label goes into the document as is
     }

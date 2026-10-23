@@ -219,7 +219,10 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
     {
         let _ = app.run("view.darkMode", json!({"value": dark_page}));
     }
-    ui.checkbox(&mut app.ui.show_discord, tl!("Show the community button in the title bar"));
+    // Fork: only when brand.toml has a community link.
+    if !wordcraft_brand::COMMUNITY_URL.is_empty() {
+        ui.checkbox(&mut app.ui.show_discord, tl!("Show the community button in the title bar"));
+    }
     default_app_button(app, ui);
     ui.add_space(8.0);
     section(ui, "Start-up");
@@ -1112,10 +1115,10 @@ mod tests {
         );
         h.run_steps(4);
         assert!(h.query_by_label("Start-up").is_some(), "the section is there");
-        h.get_by_label("Show the Start screen when WordCraft starts").click();
+        h.get_by_label(wordcraft_brand::rebrand("Show the Start screen when WordCraft starts")).click();
         h.run_steps(4);
         assert!(!h.state().ui.start_screen, "the checkbox turns it off");
-        h.get_by_label("Show the Start screen when WordCraft starts").click();
+        h.get_by_label(wordcraft_brand::rebrand("Show the Start screen when WordCraft starts")).click();
         h.run_steps(4);
         assert!(h.state().ui.start_screen, "and on again");
     }

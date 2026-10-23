@@ -34,7 +34,8 @@ impl Class {
 /// prefix.
 pub const TABLE: &[(&str, Class)] = &[
     ("geom", Class::Layer(0)),
-    ("control-key", Class::Standalone),
+    ("control-key", Class::Layer(1)), // fork: was Standalone; reads its folder name from brand
+    ("brand", Class::Layer(0)),       // fork: product identity from brand.toml
     ("doc", Class::Layer(1)),
     ("fonts", Class::Layer(1)),
     ("metafile", Class::Layer(1)),

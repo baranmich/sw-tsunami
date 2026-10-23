@@ -1,0 +1,83 @@
+# The fork's only workflow (upstream's workflows are removed: they build every platform and
+# publish to upstream's channels). Linux runs the cheap checks on every push; the macOS DMG is
+# built on demand (Actions › fork › Run workflow) or for a v* tag, because macOS minutes cost 10x.
+name: fork
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  # Same craft-fonts commit upstream pins (crates/fonts/build.rs): embeds the open CJK fonts.
+  CRAFT_FONTS_REF: 8dcdacd5153e64560d109541a47d806f26f048c0
+
+jobs:
+  check:
+    name: brand, layers, tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux build dependencies (winit, wgpu, rfd)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev \
+            libxi-dev libgtk-3-dev libfontconfig1-dev libfreetype-dev mesa-vulkan-drivers
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: No upstream brand outside brand.toml
+        run: cargo xtask brand
+      - name: Crate layering
+        run: cargo xtask layers
+      - name: Tests
+        run: cargo test --workspace
+
+  macos:
+    name: macOS DMG
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    needs: check
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out craft-fonts
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: ${{ env.CRAFT_FONTS_REF }}
+          path: craft-fonts
+      - run: |
+          rustup toolchain install stable --profile minimal --target aarch64-apple-darwin,x86_64-apple-darwin
+          rustup default stable
+      - uses: Swatinem/rust-cache@v2
+      - name: DMG layout tools
+        run: |
+          brew install resvg
+          python3 -m pip install --break-system-packages 'pillow>=12' ds_store==1.3.3 mac_alias==2.2.3
+      # Optional: with APPLE_CERTIFICATE (+ password) the app is Developer ID signed; with
+      # APPLE_ID, APPLE_PASSWORD and APPLE_TEAM_ID also notarized. Without them: ad-hoc signed.
+      - name: Import signing certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: packaging/macos/import-cert.sh
+      - name: Build, sign and package
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: packaging/macos/package.sh --arch universal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist/release/*
+          if-no-files-found: error

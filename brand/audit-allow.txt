@@ -1,0 +1,17 @@
+# Deliberate upstream-name exceptions for `cargo xtask brand`: `path: substring of the line`.
+# Keep this short; every line is a place the upstream name stays on purpose.
+
+# Credit to upstream in About (the licences ask for attribution; nominative use, not branding).
+crates/ui-egui/src/dialogs.rs: "Based on WordCraft, an open-source word processor
+crates/ui-egui/src/dialogs.rs: "github.com/storytold/wordcraft"
+# Strings the translation audit lets through untranslated (a check list, never shown).
+crates/ui-egui/src/i18n/audit.rs: "WordCraft User"
+crates/ui-egui/src/i18n/audit.rs: plain.starts_with("Based on WordCraft,")
+crates/ui-egui/src/i18n/audit.rs: plain == "github.com/storytold/wordcraft"
+# Developer tooling output (docs/parity-checklist.md header).
+apps/wordcraft-cli/src/main.rs: "# WordCraft feature parity
+# Windows-only (not shipped by this fork): exe resources and the registry name its installer writes.
+apps/wordcraft/build.rs: .set("ProductName", "WordCraft")
+apps/wordcraft/build.rs: .set("FileDescription", "WordCraft word processor")
+apps/wordcraft/build.rs: .set("LegalCopyright", "Copyright (c) the WordCraft authors.
+apps/wordcraft/src/default_apps.rs: registeredAppMachine=WordCraft

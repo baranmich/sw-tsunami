@@ -1,0 +1,14 @@
+[package]
+name = "wordcraft-brand"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Product identity (name, bundle id, data folder, links) generated from the root brand.toml"
+build = "build.rs"
+
+[lints]
+workspace = true
+
+[build-dependencies]
+toml = { version = "1", default-features = false, features = ["parse", "serde"] }
+serde = { workspace = true }

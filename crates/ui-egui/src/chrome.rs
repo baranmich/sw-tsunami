@@ -337,7 +337,7 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                         let _ = app.run("ui.backstage", json!({"value": true, "page": "options", "pane": "general"}));
                     }
                     ui.add_space(8.0);
-                    if app.ui.show_discord {
+                    if app.ui.show_discord && !wordcraft_brand::COMMUNITY_URL.is_empty() {
                         let (r, resp) = ui.allocate_exact_size(vec2(84.0, 22.0), Sense::click());
                         ui.painter().rect_filled(r, 11.0, if resp.hovered() { t.accent_text } else { t.accent });
                         icons::paint(
@@ -348,7 +348,7 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                             t.on_accent,
                         );
                         ui.painter().text(pos2(r.min.x + 24.0, r.center().y), Align2::LEFT_CENTER, tl!("Discord"), medium(11.5), t.on_accent);
-                        if resp.on_hover_text(tl!("Join the ArtCraft community on Discord")).clicked() {
+                        if resp.on_hover_text(tl!("Join the community")).clicked() {
                             let _ = app.run("ui.discord", json!({}));
                         }
                         ui.add_space(8.0);
@@ -360,7 +360,7 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
             // Centred title.
             let title = if !app.has_document() {
                 // No document open (#1129): the app's name alone.
-                "WordCraft".to_string()
+                wordcraft_brand::NAME.to_string()
             } else {
                 format!(
                     "{} — {}",

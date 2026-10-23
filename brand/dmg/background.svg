@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 400" width="660" height="400">
+  <!-- DMG window background for the fork (original, CC0). No name or lettering, so it survives
+       the rename. App icon sits at (326, 205), Applications at (574, 205), 128 pt boxes; the area
+       under both stays light because Finder draws the labels in black. -->
+  <rect width="660" height="400" fill="#f6f3ec"/>
+  <rect y="0" width="660" height="56" fill="#1d2440"/>
+  <rect x="300" y="0" width="22" height="56" fill="#ef6b4a"/>
+  <path d="M410 205 H478" stroke="#8a90a6" stroke-width="6" stroke-linecap="round"/>
+  <path d="M466 190 L486 205 L466 220" fill="none" stroke="#8a90a6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

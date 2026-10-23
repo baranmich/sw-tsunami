@@ -4,6 +4,7 @@
 //! invoked through `std::process::Command`.
 
 mod assets;
+mod brand;
 mod ico;
 mod layers;
 mod parity;
@@ -20,6 +21,7 @@ usage: cargo xtask <command>
 commands:
   assets          check that every icon/image/font/asset is attributed in ATTRIBUTION.md
   layers          enforce the crate dependency layering (plan/architecture.md §3)
+  brand           (fork) list upstream names/links that reach the user outside brand.toml
   wasm            cargo check --target wasm32-unknown-unknown for the wasm-safe crates
   ci              fmt --check, clippy -D warnings, test, assets, layers, wasm (stops at first failure)
   corpus [--download]
@@ -39,6 +41,7 @@ fn main() -> ExitCode {
     let result = match args.first().map(String::as_str) {
         Some("assets") => assets::run(&root()),
         Some("layers") => cmd_layers(),
+        Some("brand") => brand::run(&root()),
         Some("wasm") => cmd_wasm(),
         Some("ci") => cmd_ci(),
         Some("corpus") => cmd_corpus(rest.contains(&"--download")),
@@ -182,6 +185,7 @@ fn cmd_ci() -> Result<(), String> {
         ),
         ("assets", Box::new(|| assets::run(&root()))),
         ("layers", Box::new(cmd_layers)),
+        ("brand", Box::new(|| brand::run(&root()))),
         ("wasm", Box::new(cmd_wasm)),
     ];
     let mut done = Vec::new();
