@@ -39,6 +39,28 @@ oprávnění ke složkám a „Otevřít v“. Proto neobsahují zobrazovaný n�
 - `cargo xtask brand` hlídá, že žádný nový upstreamový řetězec neukazuje starý název. Výjimky
   jsou záměrně v `brand/audit-allow.txt` (poděkování upstreamu v About, kód jen pro Windows).
 
+## Mac skořápka (místo ribbonu)
+
+`brand.toml` › `[ui] shell = "mac"` přepne okno z upstreamového ribbonu na rozhraní ve stylu
+macOS. `"ribbon"` vrátí upstreamový vzhled. Obě varianty spouštějí stejné příkazy, takže funkce,
+undo, vyhledávání příkazů, makra, MCP i řídicí kanál fungují beze změny.
+
+| Část | Soubor | Co dělá |
+|---|---|---|
+| Lišta | `crates/ui-egui/src/mac_shell/toolbar.rs` | Jeden řádek v pásu se semafory: osnova, název dokumentu („Upraveno“), styl odstavce, B/I/U, seznamy, tabulka, obrázek, tvary, Vložit, komentář, inspektor |
+| Inspektor | `mac_shell/inspector.rs` | Panel vpravo, záložky Text / Stránka / Dokument |
+| Menu bar | `mac_shell/menu.rs` (model) + `apps/wordcraft/src/mac_menu.rs` (AppKit přes `muda`) | Systémová menu: aplikace, Soubor, Úpravy, Vložit, Formát, Zobrazení, Nástroje, Okno, Nápověda; vše ostatní přes Nápověda › Všechny příkazy |
+| Start | `mac_shell/start.rs` | Výběr šablony a nedávné dokumenty místo modrého panelu „Good morning“ |
+
+Upstreamový kód volá skořápku jen na třech místech ve `WordApp::ui` (`mac_shell::on()`).
+Upstreamové UI testy (přes 800) běží dál nad ribbonem; skořápka má vlastní testy v
+`mac_shell/tests.rs`. Položky menu nemají vlastní klávesové zkratky, takže zkratky obsluhuje dál
+aplikace sama a nic se nezdvojuje.
+
+Zatím zůstává z upstreamu: stránky Soubor › Možnosti / Tisk / Export / Info (otevírají se z menu),
+pravítko a stavová lišta. Výchozí písmo nových dokumentů je dál `Aptos` (konstanta v
+`crates/doc/src/styles.rs`, změna by zasáhla layout i testy upstreamu).
+
 ## Převzetí novinek z upstreamu
 
 ```sh

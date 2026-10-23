@@ -1,0 +1,82 @@
+# Fork translations: interface text the fork adds (mac shell, About), kept out of upstream's
+# catalogs so merges stay clean. Columns, TAB-separated: language code, English source, translation.
+# Looked up after the upstream catalog (crates/brand/src/lib.rs, `translate`).
+bg	A word processor for macOS.	Текстообработваща програма за macOS.
+bg	Join the community	Присъединете се към общността
+cs	A word processor for macOS.	Textový editor pro macOS.
+cs	Join the community	Připojte se ke komunitě
+cs	Actual Size	Skutečná velikost
+cs	All Commands…	Všechny příkazy…
+cs	Background	Pozadí
+cs	Bookmark…	Záložka…
+cs	Choose a Template	Vyberte šablonu
+cs	Columns…	Sloupce…
+cs	Documents open in their own format: .docx, .odt, .rtf, .md and more.	Dokumenty se otevírají ve svém formátu: .docx, .odt, .rtf, .md a další.
+cs	Edit	Úpravy
+cs	Endnote	Vysvětlivka
+cs	Enter Full Screen	Zapnout režim celé obrazovky
+cs	Export PDF…	Exportovat do PDF…
+cs	Find…	Najít…
+cs	Footnote	Poznámka pod čarou
+cs	Inspector	Inspektor
+cs	Lists	Seznamy
+cs	Narrow Margins	Úzké okraje
+cs	Normal Margins	Normální okraje
+cs	Open…	Otevřít…
+cs	Page Setup…	Vzhled stránky…
+cs	Paragraph Style	Styl odstavce
+cs	Paste and Match Style	Vložit a přizpůsobit styl
+cs	Print…	Tisk…
+cs	Replace…	Nahradit…
+cs	Save As…	Uložit jako…
+cs	Save as Template…	Uložit jako šablonu…
+cs	Table…	Tabulka…
+cs	Wide Margins	Široké okraje
+da	A word processor for macOS.	Et tekstbehandlingsprogram til macOS.
+da	Join the community	Bliv en del af fællesskabet
+de	A word processor for macOS.	Ein Textverarbeitungsprogramm für macOS.
+de	Join the community	Der Community beitreten
+es	A word processor for macOS.	Un procesador de textos para macOS.
+es	Join the community	Únete a la comunidad
+et	A word processor for macOS.	Tekstitöötlusprogramm macOS-ile.
+et	Join the community	Liitu kogukonnaga
+fr	A word processor for macOS.	Un traitement de texte pour macOS.
+fr	Join the community	Rejoindre la communauté
+hr	A word processor for macOS.	Program za obradu teksta za macOS.
+hr	Join the community	Pridružite se zajednici
+hu	A word processor for macOS.	Szövegszerkesztő macOS-re.
+hu	Join the community	Csatlakozzon a közösséghez
+it	A word processor for macOS.	Un elaboratore di testi per macOS.
+it	Join the community	Unisciti alla community
+ja	A word processor for macOS.	macOS 用のワープロ。
+ja	Join the community	コミュニティに参加
+ko	A word processor for macOS.	macOS용 워드 프로세서.
+ko	Join the community	커뮤니티 참여
+nl	A word processor for macOS.	Een tekstverwerker voor macOS.
+nl	Join the community	Word lid van de community
+pl	A word processor for macOS.	Edytor tekstu dla systemu macOS.
+pl	Join the community	Dołącz do społeczności
+pt-br	A word processor for macOS.	Um processador de texto para macOS.
+pt-br	Join the community	Participe da comunidade
+ro	A word processor for macOS.	Un procesor de text pentru macOS.
+ro	Join the community	Alăturați-vă comunității
+ru	A word processor for macOS.	Текстовый редактор для macOS.
+ru	Join the community	Присоединиться к сообществу
+sl	A word processor for macOS.	Urejevalnik besedil za macOS.
+sl	Join the community	Pridružite se skupnosti
+sr-latn	A word processor for macOS.	Program za obradu teksta za macOS.
+sr-latn	Join the community	Pridružite se zajednici
+sr	A word processor for macOS.	Програм за обраду текста за macOS.
+sr	Join the community	Придружите се заједници
+sv	A word processor for macOS.	En ordbehandlare för macOS.
+sv	Join the community	Gå med i communityn
+tr	A word processor for macOS.	macOS için bir kelime işlemci.
+tr	Join the community	Topluluğa katılın
+uk	A word processor for macOS.	Текстовий редактор для macOS.
+uk	Join the community	Приєднатися до спільноти
+vi	A word processor for macOS.	Trình soạn thảo văn bản cho macOS.
+vi	Join the community	Tham gia cộng đồng
+zh-hans	A word processor for macOS.	适用于 macOS 的文字处理软件。
+zh-hans	Join the community	加入社区
+zh-hant	A word processor for macOS.	適用於 macOS 的文書處理軟體。
+zh-hant	Join the community	加入社群

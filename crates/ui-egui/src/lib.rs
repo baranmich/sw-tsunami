@@ -63,6 +63,7 @@ pub mod icons;
 pub mod ink;
 pub mod keys;
 pub mod keytips;
+pub mod mac_shell;
 pub mod mini_toolbar;
 pub mod objects;
 pub mod options;
@@ -2381,8 +2382,14 @@ impl WordApp {
             backstage::forget_open_error(&ctx);
             backstage::forget_save_as_error(&ctx);
         }
-        if self.ui.backstage {
+        if self.ui.backstage && mac_shell::on() && mac_shell::start::handles(self) {
+            // Fork: the mac shell's start window instead of File › Home and New.
+            mac_shell::start::show(self, ui);
+        } else if self.ui.backstage {
             backstage::show(self, ui);
+        } else if !self.has_document() && mac_shell::on() {
+            // Fork: the mac shell (toolbar, inspector, menu bar) instead of the ribbon.
+            mac_shell::empty_frame(self, ui);
         } else if !self.has_document() {
             // No document open (#1129): the ribbon greyed out but for Help, and no page.
             chrome::title_bar(self, ui);
@@ -2395,6 +2402,8 @@ impl WordApp {
             self.focus_ribbon &= screen == chrome::Screen::Focus;
             if screen != chrome::Screen::Normal {
                 chrome::screen_bar(self, ui, screen);
+            } else if mac_shell::on() {
+                mac_shell::document_frame(self, ui);
             } else {
                 chrome::title_bar(self, ui);
                 ribbon::show(self, ui);

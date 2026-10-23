@@ -226,7 +226,7 @@ fn heading(ui: &mut Ui, s: &str) {
     ui.add_space(16.0);
 }
 
-fn template_tile(ui: &mut Ui, app: &mut WordApp, label: &str, template: &str) {
+pub(crate) fn template_tile(ui: &mut Ui, app: &mut WordApp, label: &str, template: &str) {
     let t = Tokens::get(ui.ctx());
     ui.vertical(|ui| {
         // The thumbnail and its caption are one button named by the caption, so a screen reader
@@ -277,7 +277,7 @@ fn template_tile(ui: &mut Ui, app: &mut WordApp, label: &str, template: &str) {
 }
 
 /// The built-in templates in gallery order: display label and the `file.new` template id.
-const TEMPLATES: [(&str, &str); 5] =
+pub(crate) const TEMPLATES: [(&str, &str); 5] =
     [("Blank document", "blank"), ("Studio handbook (sample)", "sample"), ("Letter", "letter"), ("Résumé", "resume"), ("Report", "report")];
 
 /// How many templates Home shows before "More templates" (the rest are on New).
@@ -506,7 +506,7 @@ fn personal_error_id() -> egui::Id {
     egui::Id::new("backstage_personal_error")
 }
 
-fn open_list(app: &mut WordApp, ui: &mut Ui) {
+pub(crate) fn open_list(app: &mut WordApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     ui.label(egui::RichText::new(tl!("Recent")).font(semibold(16.0)));
     ui.add_space(6.0);

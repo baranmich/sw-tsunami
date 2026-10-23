@@ -55,6 +55,26 @@ pub fn upstream_form(s: &str) -> Option<String> {
     if NAME.is_empty() || !s.contains(NAME) { None } else { Some(s.replace(NAME, UPSTREAM_NAME)) }
 }
 
+/// The fork's own interface translations (`brand/i18n.tsv`): language code, English, translation.
+const FORK_CATALOG: &str = include_str!("../../../brand/i18n.tsv");
+
+/// `s` in language `code` from the fork's catalog, for text upstream's catalogs don't have.
+pub fn translate(code: &str, s: &str) -> Option<&'static str> {
+    static MAP: OnceLock<HashMap<(String, String), &'static str>> = OnceLock::new();
+    let map = MAP.get_or_init(|| {
+        FORK_CATALOG
+            .lines()
+            .filter(|l| !l.starts_with('#') && !l.trim().is_empty())
+            .filter_map(|l| {
+                let mut cols = l.splitn(3, '\t');
+                let (lang, src, tr) = (cols.next()?, cols.next()?, cols.next()?);
+                Some(((lang.to_string(), src.to_string()), tr))
+            })
+            .collect()
+    });
+    map.get(&(code.to_string(), s.to_string())).copied()
+}
+
 /// `Some(url)` when the link is configured.
 pub fn link(url: &'static str) -> Option<&'static str> {
     if url.is_empty() { None } else { Some(url) }
@@ -82,6 +102,8 @@ mod tests {
         assert_eq!(rebrand_owned("WordCraft User"), format!("{NAME} User"));
         assert_eq!(upstream_form(&format!("{NAME} keeps it offline")).as_deref(), Some("WordCraft keeps it offline"));
         assert_eq!(upstream_form("plain text"), None);
+        assert_eq!(translate("cs", "Inspector"), Some("Inspektor"));
+        assert_eq!(translate("cs", "No such text"), None);
     }
 
     #[test]

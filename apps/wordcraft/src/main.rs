@@ -19,10 +19,12 @@ mod file_dialogs;
 #[cfg(any(target_os = "windows", target_os = "macos", test))]
 mod graphics;
 mod logging;
+#[cfg(target_os = "macos")]
+mod mac_menu;
 mod print;
 mod region;
 #[cfg(target_os = "macos")]
-mod traffic_lights;
+mod traffic_lights; // fork: the mac shell's system menu bar
 
 use wordcraft_engine::Session;
 use wordcraft_ui_egui::{
@@ -45,6 +47,10 @@ impl eframe::App for App {
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         #[cfg(target_os = "macos")]
         apple_events::poll(&self.4, &mut self.0, ctx);
+        #[cfg(target_os = "macos")]
+        if wordcraft_ui_egui::mac_shell::on() {
+            mac_menu::poll(&mut self.0, ctx);
+        }
         self.0.logic(ctx);
         self.3.show(frame);
         // A window that doesn't fit on its screen (the default size on a laptop) shrinks to fit
@@ -452,6 +458,10 @@ fn main() -> eframe::Result {
             if let Some(bar) = traffic_lights::title_bar() {
                 log::info!("title bar: {bar:?}");
                 app.mac_titlebar = bar;
+            }
+            #[cfg(target_os = "macos")]
+            if wordcraft_ui_egui::mac_shell::on() {
+                mac_menu::install(&app, &cc.egui_ctx);
             }
             let mut key_file = None;
             if let Some(port) = control_port

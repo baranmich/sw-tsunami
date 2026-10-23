@@ -667,7 +667,7 @@ const UNDERLINE_STYLES: [(&str, &str); 8] = [
 
 /// Home › Font › Underline's drop-down (#2738): a sample of each line, Words only, None, More
 /// Underlines… (the Font dialog) and Underline Color.
-fn underline_menu(ui: &mut Ui, app: &mut WordApp) {
+pub(crate) fn underline_menu(ui: &mut Ui, app: &mut WordApp) {
     for (style, name) in UNDERLINE_STYLES {
         underline_item(ui, app, style, name);
     }
@@ -982,7 +982,7 @@ fn language_checks(current: &str, listed: impl Fn(&str) -> bool) -> LanguageChec
 }
 
 /// A menu item with a check mark when `checked` (the current choice of several).
-fn mi_check(ui: &mut Ui, app: &mut WordApp, label: &str, checked: bool, id: &str, params: Value) {
+pub(crate) fn mi_check(ui: &mut Ui, app: &mut WordApp, label: &str, checked: bool, id: &str, params: Value) {
     // An invisible mark keeps the unchecked labels aligned with the checked one.
     let mark = egui::RichText::new("✓");
     let mark = if checked { mark } else { mark.color(egui::Color32::TRANSPARENT) };
@@ -1674,7 +1674,7 @@ fn design(app: &mut WordApp, ui: &mut Ui) {
 
 // Layout › Margins, Orientation, Size and Columns: the caret section's setting has a check
 // mark, as Text Direction's does (#1206).
-fn margins_items(ui: &mut Ui, app: &mut WordApp) {
+pub(crate) fn margins_items(ui: &mut Ui, app: &mut WordApp) {
     let current = wordcraft_engine::cmd::page::margins_preset_at(&app.session);
     // The two uniform presets name their margin in the measurement unit (`2,54 cm`, #838).
     for (l, k, uniform) in [
@@ -1696,13 +1696,13 @@ fn margins_items(ui: &mut Ui, app: &mut WordApp) {
     mi(ui, app, "Custom Margins…", "ui.dialog", json!({"name": "pageSetup"}));
 }
 
-fn orientation_items(ui: &mut Ui, app: &mut WordApp) {
+pub(crate) fn orientation_items(ui: &mut Ui, app: &mut WordApp) {
     let land = wordcraft_engine::cmd::page::sect(&app.session).landscape;
     mi_check(ui, app, "Portrait", !land, "layout.orientation", json!({"value": "portrait"}));
     mi_check(ui, app, "Landscape", land, "layout.orientation", json!({"value": "landscape"}));
 }
 
-fn columns_items(ui: &mut Ui, app: &mut WordApp) {
+pub(crate) fn columns_items(ui: &mut Ui, app: &mut WordApp) {
     let current = wordcraft_engine::cmd::page::columns_preset_at(&app.session);
     for (l, k, params) in [
         ("One", "one", json!({"count": 1})),
