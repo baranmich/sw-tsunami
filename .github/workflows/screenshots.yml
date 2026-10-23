@@ -1,0 +1,39 @@
+# Fork: screenshots of the running app on a real Mac (menu bar, traffic lights, menus), for
+# reviewing the mac shell. On demand (Actions › screenshots › Run workflow) or on a push to the
+# ci/screenshots branch. One run is roughly 15–20 macOS minutes.
+name: screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ci/screenshots]
+
+jobs:
+  shots:
+    runs-on: macos-14
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal --target aarch64-apple-darwin && rustup default stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: screenshots
+      - name: Build (Apple silicon)
+        run: cargo build --release --locked -p wordcraft -p wordcraft-cli --target aarch64-apple-darwin
+      - name: Assemble the app (ad-hoc signed)
+        run: packaging/macos/package.sh --arch aarch64 --skip-build
+      - name: Screen size
+        run: system_profiler SPDisplaysDataType | grep -i resolution || true
+      - name: Run and capture
+        run: |
+          APP="$(ls -d target/macos-package/*.app | head -1)"
+          brand/screenshots.sh "$APP" shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: shots/*.png
+          if-no-files-found: warn
