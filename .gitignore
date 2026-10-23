@@ -8,3 +8,6 @@ plan/
 /.claude/
 /target-*/
 /craft-fonts/
+
+# Fork: Python caches from brand/dmg.py (imports packaging/macos/dmg/generate.py).
+__pycache__/
