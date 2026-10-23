@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Linux build dependencies (winit, wgpu, rfd)
         run: |
           sudo apt-get update
@@ -53,9 +53,9 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check out craft-fonts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: storytold/craft-fonts
           ref: ${{ env.CRAFT_FONTS_REF }}
@@ -82,7 +82,7 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: packaging/macos/package.sh --arch universal
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macos-dmg
           path: dist/release/*
@@ -100,11 +100,11 @@ jobs:
     #   .provisionprofile), APPLE_TEAM_ID, MAS_APP_IDENTITY, MAS_INSTALLER_IDENTITY;
     #   for upload also ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY (the .p8 file's text).
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # the build number is the commit count
       - name: Check out craft-fonts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: storytold/craft-fonts
           ref: ${{ env.CRAFT_FONTS_REF }}
@@ -148,7 +148,7 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: brand/appstore/package.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: appstore-pkg
           path: dist/release/*.pkg
